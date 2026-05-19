@@ -1,4 +1,5 @@
 import express from 'express'
+import usersRouter from './routes/users.js'
 
 const app = express()
 
@@ -10,5 +11,7 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   })
 })
+
+app.use('/users', usersRouter)
 
 export default app
