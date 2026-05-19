@@ -1,0 +1,33 @@
+name: 🚀 新功能
+description: 提一个新功能需求，随手写，不用填完整
+labels: ["feature", "needs-triage"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 想做什么
+      description: 用一两句话说清楚目标，不用写实现方式
+      placeholder: "加一个用户列表接口，支持按名字过滤"
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 怎么算完成
+      description: 用户能做什么、看到什么、不会发生什么
+      placeholder: |
+        - 能拿到用户列表
+        - 传 ?name=xx 能过滤
+        - 没有用户时返回空数组而不是报错
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 补充信息
+      description: 相关文件路径、技术约束、依赖的其他功能，有就填没有就空着
+      placeholder: "相关代码在 src/routes/ 里"
+    validations:
+      required: false
