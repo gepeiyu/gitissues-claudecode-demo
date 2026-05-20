@@ -63,6 +63,26 @@ If additional files become necessary:
 
 ---
 
+# 2.1 Status Update Rules
+
+**Before starting implementation:**
+1. Add a "Status Update: Starting implementation" comment to the Issue, describing upcoming work
+2. **Only then start coding**
+
+**After implementation is complete:**
+1. Add a "Status Update: Completed, waiting for confirmation" comment to the Issue, including:
+   - List of files created/modified
+   - Test results
+   - Acceptance criteria checklist
+2. Wait for user to confirm implementation fully meets requirements
+3. **Only create a Pull Request when the user explicitly requests it**
+
+**Forbidden:**
+- Starting coding without updating start status in the Issue
+- Automatically creating a PR without user confirmation
+
+---
+
 # 3. Scope Control Rules
 
 Do not expand scope without approval.
