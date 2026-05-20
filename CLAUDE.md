@@ -227,6 +227,11 @@ All changes must go through Pull Request review.
 
 Never merge automatically.
 
+**Always use the PR template:**
+- Fill in all sections of the template
+- Do NOT override the template with custom body content
+- Include all required information: summary, issue link, plan link, testing results, risks
+
 After PR creation:
 - stop
 - wait for human review
