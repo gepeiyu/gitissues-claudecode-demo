@@ -3,9 +3,9 @@ import { Router } from 'express'
 const router = Router()
 
 const users = [
-  { id: 1, name: 'Alice', email: 'alice@example.com' },
-  { id: 2, name: 'Bob', email: 'bob@example.com' },
-  { id: 3, name: 'Charlie', email: 'charlie@example.com' }
+  { id: 1, name: 'Alice', email: 'alice@example.com', age: 25, gender: 'female' },
+  { id: 2, name: 'Bob', email: 'bob@example.com', age: 30, gender: 'male' },
+  { id: 3, name: 'Charlie', email: 'charlie@example.com', age: 35, gender: 'male' }
 ]
 
 router.get('/', (req, res) => {
@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 router.post('/', (req, res) => {
-  const { name, email } = req.body
+  const { name, email, age, gender } = req.body
 
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'name is required' })
@@ -46,11 +46,49 @@ router.post('/', (req, res) => {
   const newUser = {
     id: users.length + 1,
     name: name.trim(),
-    email: trimmedEmail
+    email: trimmedEmail,
+    age: age || null,
+    gender: gender || null
   }
 
   users.push(newUser)
   res.status(201).json(newUser)
+})
+
+router.patch('/:id', (req, res) => {
+  const userId = parseInt(req.params.id)
+  const user = users.find(u => u.id === userId)
+
+  if (!user) {
+    return res.status(404).json({ error: 'user not found' })
+  }
+
+  const { email, age, gender } = req.body
+
+  if (email !== undefined) {
+    const trimmedEmail = email.trim()
+    if (!trimmedEmail) {
+      return res.status(400).json({ error: 'email cannot be empty' })
+    }
+    if (!emailRegex.test(trimmedEmail)) {
+      return res.status(400).json({ error: 'invalid email format' })
+    }
+    user.email = trimmedEmail
+  }
+
+  if (age !== undefined) {
+    const parsedAge = parseInt(age)
+    if (!Number.isInteger(parsedAge) || parsedAge <= 0) {
+      return res.status(400).json({ error: 'age must be a positive integer' })
+    }
+    user.age = parsedAge
+  }
+
+  if (gender !== undefined) {
+    user.gender = gender
+  }
+
+  res.json(user)
 })
 
 export default router
