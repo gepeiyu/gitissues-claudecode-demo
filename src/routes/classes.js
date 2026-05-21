@@ -2,7 +2,7 @@ import { Router } from 'express'
 
 const router = Router()
 
-const classes = []
+export const classes = []
 
 router.get('/', (req, res) => {
   let result = [...classes]
@@ -38,6 +38,17 @@ router.post('/', (req, res) => {
 
   classes.push(newClass)
   res.status(201).json(newClass)
+})
+
+router.get('/:id', (req, res) => {
+  const classId = parseInt(req.params.id)
+  const cls = classes.find(c => c.id === classId)
+
+  if (!cls) {
+    return res.status(404).json({ error: 'class not found' })
+  }
+
+  res.json(cls)
 })
 
 export default router
