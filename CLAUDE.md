@@ -63,10 +63,11 @@
 
 ## 7. Git 与 PR
 
-- 分支：`feature/issue-<id>-<short-name>`，禁止直接提交 `main`
+- 分支：`<type>/issue-<id>-<short-name>`（type 对应 conventional commit：feat/fix/docs/chore 等）
+- **代码进入 main 的唯一途径是 PR**，禁止直接提交、合并或推送到 main
 - Commit：Conventional Commits，关联 `Refs: #N`
-- 危险命令（`push --force` / `reset --hard` / `clean -fd` / `rebase`）→ 说明原因和风险，等批准
-- PR：仅在用户主动要求时创建，且必须确认草稿
+- 危险命令（`push --force` / `reset --hard` / `clean -fd` / `rebase` / `branch -D`）→ 说明原因和风险，等批准
+- PR：仅在用户主动要求时创建，先展示草稿，确认后创建
 
 ## 8. 失败处理
 
