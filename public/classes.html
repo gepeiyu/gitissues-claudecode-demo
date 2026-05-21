@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级管理</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        h2 {
+            margin: 30px 0 15px;
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #545b62;
+        }
+
+        button.danger {
+            background: #dc3545;
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        button.small {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .class-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-form {
+            background: #fff3cd;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        .edit-form .form-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .delete-confirm {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .delete-confirm p {
+            margin-bottom: 10px;
+            color: #721c24;
+        }
+
+        .delete-confirm .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="/">用户管理</a>
+        <span>班级管理</span>
+    </div>
+
+    <h1>班级管理</h1>
+
+    <div id="message" class="message"></div>
+
+    <div id="add-class-section">
+        <h2>添加班级</h2>
+        <form id="add-class-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="add-name">班级名称 *</label>
+                    <input type="text" id="add-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-grade">年级 *</label>
+                    <input type="text" id="add-grade" required placeholder="如：三年级">
+                </div>
+                <div class="form-group">
+                    <label for="add-teacher">班主任 *</label>
+                    <input type="text" id="add-teacher" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="add-room">教室</label>
+                    <input type="text" id="add-room" placeholder="如：A101">
+                </div>
+                <div class="form-group">
+                    <label for="add-studentCount">学生人数</label>
+                    <input type="number" id="add-studentCount" min="0" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="add-description">备注</label>
+                <textarea id="add-description"></textarea>
+            </div>
+            <button type="submit">添加班级</button>
+        </form>
+    </div>
+
+    <div id="class-list-section">
+        <h2>班级列表</h2>
+
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="form-group">
+                    <label for="filter-name">班级名称</label>
+                    <input type="text" id="filter-name" placeholder="输入班级名称">
+                </div>
+                <div class="form-group">
+                    <label for="filter-grade">年级</label>
+                    <input type="text" id="filter-grade" placeholder="输入年级">
+                </div>
+                <div class="form-group">
+                    <label for="filter-teacher">班主任</label>
+                    <input type="text" id="filter-teacher" placeholder="输入班主任">
+                </div>
+            </div>
+            <button type="button" class="secondary small" onclick="clearFilters()">清除筛选</button>
+        </div>
+
+        <div id="class-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>班级名称</th>
+                        <th>年级</th>
+                        <th>班主任</th>
+                        <th>教室</th>
+                        <th>学生人数</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="class-tbody">
+                    <tr>
+                        <td colspan="7">加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let classes = [];
+        let editingClassId = null;
+        let deletingClassId = null;
+
+        function showMessage(text, type = 'success') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function renderClassList() {
+            const tbody = document.getElementById('class-tbody');
+
+            if (classes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无班级</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = classes.map(cls => `
+                <tr data-id="${cls.id}">
+                    <td>${escapeHtml(cls.name)}</td>
+                    <td>${escapeHtml(cls.grade)}</td>
+                    <td>${escapeHtml(cls.teacher)}</td>
+                    <td>${escapeHtml(cls.room || '-')}</td>
+                    <td>${cls.studentCount}</td>
+                    <td>${escapeHtml(cls.description || '-')}</td>
+                    <td>
+                        ${editingClassId === cls.id ? renderEditForm(cls) :
+                          deletingClassId === cls.id ? renderDeleteConfirm(cls) :
+                          renderActions(cls)}
+                    </td>
+                </tr>
+            `).join('');
+
+            bindTableEvents();
+        }
+
+        function renderActions(cls) {
+            return `
+                <div class="class-actions">
+                    <button type="button" class="secondary small edit-btn" data-id="${cls.id}">编辑</button>
+                    <button type="button" class="danger small delete-btn" data-id="${cls.id}">删除</button>
+                </div>
+            `;
+        }
+
+        function renderEditForm(cls) {
+            return `
+                <div class="edit-form">
+                    <form class="edit-class-form" data-id="${cls.id}">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-name-${cls.id}">班级名称 *</label>
+                                <input type="text" id="edit-name-${cls.id}" value="${escapeHtml(cls.name)}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-grade-${cls.id}">年级 *</label>
+                                <input type="text" id="edit-grade-${cls.id}" value="${escapeHtml(cls.grade)}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-teacher-${cls.id}">班主任 *</label>
+                                <input type="text" id="edit-teacher-${cls.id}" value="${escapeHtml(cls.teacher)}" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-room-${cls.id}">教室</label>
+                                <input type="text" id="edit-room-${cls.id}" value="${escapeHtml(cls.room || '')}">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-studentCount-${cls.id}">学生人数</label>
+                                <input type="number" id="edit-studentCount-${cls.id}" min="0" value="${cls.studentCount}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-description-${cls.id}">备注</label>
+                            <textarea id="edit-description-${cls.id}">${escapeHtml(cls.description || '')}</textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit">保存</button>
+                            <button type="button" class="secondary cancel-edit-btn">取消</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function renderDeleteConfirm(cls) {
+            return `
+                <div class="delete-confirm">
+                    <p>确定要删除班级 "${escapeHtml(cls.name)}" 吗？</p>
+                    <div class="form-actions">
+                        <button type="button" class="danger confirm-delete-btn" data-id="${cls.id}">确认删除</button>
+                        <button type="button" class="secondary cancel-delete-btn">取消</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindTableEvents() {
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    editingClassId = parseInt(btn.dataset.id);
+                    deletingClassId = null;
+                    renderClassList();
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deletingClassId = parseInt(btn.dataset.id);
+                    editingClassId = null;
+                    renderClassList();
+                });
+            });
+
+            document.querySelectorAll('.edit-class-form').forEach(form => {
+                form.addEventListener('submit', handleEditSubmit);
+            });
+
+            document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    editingClassId = null;
+                    renderClassList();
+                });
+            });
+
+            document.querySelectorAll('.confirm-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => handleDeleteConfirm(parseInt(btn.dataset.id)));
+            });
+
+            document.querySelectorAll('.cancel-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    deletingClassId = null;
+                    renderClassList();
+                });
+            });
+        }
+
+        async function fetchClasses() {
+            try {
+                const params = new URLSearchParams();
+                const nameFilter = document.getElementById('filter-name').value.trim();
+                const gradeFilter = document.getElementById('filter-grade').value.trim();
+                const teacherFilter = document.getElementById('filter-teacher').value.trim();
+
+                if (nameFilter) params.append('name', nameFilter);
+                if (gradeFilter) params.append('grade', gradeFilter);
+                if (teacherFilter) params.append('teacher', teacherFilter);
+
+                const url = params.toString() ? `/classes?${params.toString()}` : '/classes';
+                const res = await fetch(url);
+                classes = await res.json();
+                renderClassList();
+            } catch (err) {
+                showMessage('加载班级失败', 'error');
+                console.error(err);
+            }
+        }
+
+        async function handleAddSubmit(e) {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById('add-name').value.trim(),
+                grade: document.getElementById('add-grade').value.trim(),
+                teacher: document.getElementById('add-teacher').value.trim()
+            };
+
+            const room = document.getElementById('add-room').value.trim();
+            const studentCount = document.getElementById('add-studentCount').value;
+            const description = document.getElementById('add-description').value.trim();
+
+            if (room) data.room = room;
+            if (studentCount) data.studentCount = parseInt(studentCount);
+            if (description) data.description = description;
+
+            try {
+                const res = await fetch('/classes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '添加班级失败');
+                }
+
+                showMessage('班级添加成功');
+                e.target.reset();
+                document.getElementById('add-studentCount').value = '0';
+                fetchClasses();
+            } catch (err) {
+                showMessage(err.message, 'error');
+            }
+        }
+
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const classId = parseInt(form.dataset.id);
+
+            const data = {
+                name: document.getElementById(`edit-name-${classId}`).value.trim(),
+                grade: document.getElementById(`edit-grade-${classId}`).value.trim(),
+                teacher: document.getElementById(`edit-teacher-${classId}`).value.trim()
+            };
+
+            const room = document.getElementById(`edit-room-${classId}`).value.trim();
+            const studentCount = document.getElementById(`edit-studentCount-${classId}`).value;
+            const description = document.getElementById(`edit-description-${classId}`).value.trim();
+
+            data.room = room || null;
+            data.studentCount = studentCount !== '' ? parseInt(studentCount) : 0;
+            data.description = description || null;
+
+            try {
+                const res = await fetch(`/classes/${classId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '更新班级失败');
+                }
+
+                showMessage('班级更新成功');
+                editingClassId = null;
+                fetchClasses();
+            } catch (err) {
+                showMessage(err.message, 'error');
+            }
+        }
+
+        async function handleDeleteConfirm(classId) {
+            try {
+                const res = await fetch(`/classes/${classId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '删除班级失败');
+                }
+
+                showMessage('班级删除成功');
+                deletingClassId = null;
+                fetchClasses();
+            } catch (err) {
+                showMessage(err.message, 'error');
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-name').value = '';
+            document.getElementById('filter-grade').value = '';
+            document.getElementById('filter-teacher').value = '';
+            fetchClasses();
+        }
+
+        document.getElementById('add-class-form').addEventListener('submit', handleAddSubmit);
+        document.getElementById('filter-name').addEventListener('input', fetchClasses);
+        document.getElementById('filter-grade').addEventListener('input', fetchClasses);
+        document.getElementById('filter-teacher').addEventListener('input', fetchClasses);
+
+        fetchClasses();
+    </script>
+</body>
+</html>
