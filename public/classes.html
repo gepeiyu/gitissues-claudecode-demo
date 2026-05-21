@@ -44,6 +44,19 @@
             text-decoration: underline;
         }
 
+        .nav-links .user-section {
+            float: right;
+        }
+
+        .nav-links .user-section span {
+            margin-right: 10px;
+            color: #666;
+        }
+
+        .nav-links .user-section a {
+            color: #dc3545;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -218,6 +231,10 @@
     <div class="nav-links">
         <a href="/">用户管理</a>
         <span>班级管理</span>
+        <div class="user-section" id="user-section">
+            <span id="current-user"></span>
+            <a href="#" id="logout-link">退出</a>
+        </div>
     </div>
 
     <h1>班级管理</h1>
@@ -577,12 +594,33 @@
             fetchClasses();
         }
 
-        document.getElementById('add-class-form').addEventListener('submit', handleAddSubmit);
-        document.getElementById('filter-name').addEventListener('input', fetchClasses);
-        document.getElementById('filter-grade').addEventListener('input', fetchClasses);
-        document.getElementById('filter-teacher').addEventListener('input', fetchClasses);
+        // 检查登录状态
+        function checkLogin() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            document.getElementById('current-user').textContent = `当前用户: ${currentUser}`;
+            return true;
+        }
 
-        fetchClasses();
+        // 退出登录
+        function handleLogout(e) {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            window.location.href = '/login.html';
+        }
+
+        // 初始化
+        if (checkLogin()) {
+            document.getElementById('add-class-form').addEventListener('submit', handleAddSubmit);
+            document.getElementById('filter-name').addEventListener('input', fetchClasses);
+            document.getElementById('filter-grade').addEventListener('input', fetchClasses);
+            document.getElementById('filter-teacher').addEventListener('input', fetchClasses);
+            document.getElementById('logout-link').addEventListener('click', handleLogout);
+            fetchClasses();
+        }
     </script>
 </body>
 </html>
