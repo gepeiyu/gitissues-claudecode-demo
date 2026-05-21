@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        h2 {
+            margin: 30px 0 15px;
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #545b62;
+        }
+
+        .user-list {
+            list-style: none;
+        }
+
+        .user-item {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-item:hover {
+            background: #f8f9fa;
+        }
+
+        .user-item.editing {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .user-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .user-details {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .edit-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .edit-form .form-actions {
+            margin-top: 15px;
+        }
+
+        .edit-form button + button {
+            margin-left: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>用户管理</h1>
+
+    <div id="message" class="message"></div>
+
+    <div id="add-user-section">
+        <h2>添加用户</h2>
+        <form id="add-user-form">
+            <div class="form-group">
+                <label for="add-name">姓名 *</label>
+                <input type="text" id="add-name" required>
+            </div>
+            <div class="form-group">
+                <label for="add-email">邮箱 *</label>
+                <input type="email" id="add-email" required>
+            </div>
+            <div class="form-group">
+                <label for="add-age">年龄</label>
+                <input type="number" id="add-age" min="1">
+            </div>
+            <div class="form-group">
+                <label for="add-gender">性别</label>
+                <select id="add-gender">
+                    <option value="">请选择</option>
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="add-class">班级</label>
+                <input type="text" id="add-class">
+            </div>
+            <button type="submit">添加用户</button>
+        </form>
+    </div>
+
+    <div id="user-list-section">
+        <h2>用户列表</h2>
+        <ul id="user-list" class="user-list">
+            <li>加载中...</li>
+        </ul>
+    </div>
+
+    <script>
+        let users = [];
+        let editingUserId = null;
+
+        // 显示消息
+        function showMessage(text, type = 'success') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // 渲染用户列表
+        function renderUserList() {
+            const userListEl = document.getElementById('user-list');
+
+            if (users.length === 0) {
+                userListEl.innerHTML = '<li>暂无用户</li>';
+                return;
+            }
+
+            userListEl.innerHTML = users.map(user => `
+                <li class="user-item ${editingUserId === user.id ? 'editing' : ''}" data-id="${user.id}">
+                    <div class="user-name">${escapeHtml(user.name)}</div>
+                    <div class="user-details">
+                        邮箱: ${escapeHtml(user.email)}
+                        ${user.age ? ` | 年龄: ${user.age}` : ''}
+                        ${user.gender ? ` | 性别: ${user.gender === 'male' ? '男' : '女'}` : ''}
+                        ${user.class ? ` | 班级: ${escapeHtml(user.class)}` : ''}
+                    </div>
+                    ${editingUserId === user.id ? renderEditForm(user) : ''}
+                </li>
+            `).join('');
+
+            // 绑定点击事件
+            userListEl.querySelectorAll('.user-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.edit-form')) return;
+                    const userId = parseInt(item.dataset.id);
+                    if (editingUserId !== userId) {
+                        editingUserId = userId;
+                        renderUserList();
+                    }
+                });
+            });
+
+            // 绑定编辑表单事件
+            userListEl.querySelectorAll('.edit-form').forEach(form => {
+                form.addEventListener('submit', handleEditSubmit);
+                form.querySelector('.cancel-btn').addEventListener('click', () => {
+                    editingUserId = null;
+                    renderUserList();
+                });
+            });
+        }
+
+        // 渲染编辑表单
+        function renderEditForm(user) {
+            return `
+                <div class="edit-form">
+                    <form data-id="${user.id}">
+                        <div class="form-group">
+                            <label>姓名 (不可修改)</label>
+                            <input type="text" value="${escapeHtml(user.name)}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email-${user.id}">邮箱</label>
+                            <input type="email" id="edit-email-${user.id}" value="${escapeHtml(user.email)}">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-age-${user.id}">年龄</label>
+                            <input type="number" id="edit-age-${user.id}" min="1" value="${user.age || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-gender-${user.id}">性别</label>
+                            <select id="edit-gender-${user.id}">
+                                <option value="">请选择</option>
+                                <option value="male" ${user.gender === 'male' ? 'selected' : ''}>男</option>
+                                <option value="female" ${user.gender === 'female' ? 'selected' : ''}>女</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-class-${user.id}">班级</label>
+                            <input type="text" id="edit-class-${user.id}" value="${escapeHtml(user.class || '')}">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit">保存</button>
+                            <button type="button" class="secondary cancel-btn">取消</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        // 转义 HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 获取用户列表
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/users');
+                users = await res.json();
+                renderUserList();
+            } catch (err) {
+                showMessage('加载用户失败', 'error');
+                console.error(err);
+            }
+        }
+
+        // 处理添加用户
+        async function handleAddSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('add-name').value.trim();
+            const email = document.getElementById('add-email').value.trim();
+            const age = document.getElementById('add-age').value;
+            const gender = document.getElementById('add-gender').value;
+            const userClass = document.getElementById('add-class').value.trim();
+
+            const data = { name, email };
+            if (age) data.age = parseInt(age);
+            if (gender) data.gender = gender;
+            if (userClass) data.class = userClass;
+
+            try {
+                const res = await fetch('/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '添加用户失败');
+                }
+
+                showMessage('用户添加成功');
+                e.target.reset();
+                fetchUsers();
+            } catch (err) {
+                showMessage(err.message, 'error');
+            }
+        }
+
+        // 处理编辑用户
+        async function handleEditSubmit(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const userId = parseInt(form.dataset.id);
+            const email = form.querySelector('[id^="edit-email-"]').value.trim();
+            const age = form.querySelector('[id^="edit-age-"]').value;
+            const gender = form.querySelector('[id^="edit-gender-"]').value;
+            const userClass = form.querySelector('[id^="edit-class-"]').value.trim();
+
+            const data = { email };
+            if (age) data.age = parseInt(age);
+            else if (age === '') data.age = null;
+            if (gender) data.gender = gender;
+            else data.gender = null;
+            if (userClass) data.class = userClass;
+            else data.class = null;
+
+            try {
+                const res = await fetch(`/users/${userId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || '更新用户失败');
+                }
+
+                showMessage('用户更新成功');
+                editingUserId = null;
+                fetchUsers();
+            } catch (err) {
+                showMessage(err.message, 'error');
+            }
+        }
+
+        // 初始化
+        document.getElementById('add-user-form').addEventListener('submit', handleAddSubmit);
+        fetchUsers();
+    </script>
+</body>
+</html>
