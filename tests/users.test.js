@@ -27,6 +27,66 @@ describe('GET /users', () => {
     expect(response.status).toBe(200)
     expect(response.body).toHaveLength(0)
   })
+
+  it('should filter users by class (exact match, case-insensitive)', async () => {
+    const response = await request(app).get('/users?class=三年二班')
+
+    expect(response.status).toBe(200)
+    expect(response.body.length).toBeGreaterThanOrEqual(1)
+    expect(response.body.find(u => u.name === 'Bob')).toBeDefined()
+  })
+
+  it('should filter users by class with partial match', async () => {
+    const response = await request(app).get('/users?class=三年')
+
+    expect(response.status).toBe(200)
+    expect(response.body.find(u => u.name === 'Alice')).toBeDefined()
+    expect(response.body.find(u => u.name === 'Bob')).toBeDefined()
+  })
+
+  it('should filter users by class case-insensitively', async () => {
+    const response = await request(app).get('/users?class=三年二班')
+
+    expect(response.status).toBe(200)
+    expect(response.body.find(u => u.name === 'Bob')).toBeDefined()
+  })
+
+  it('should return empty array when class filter has no match', async () => {
+    const response = await request(app).get('/users?class=nonexistent')
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveLength(0)
+  })
+
+  it('should filter users by class (exact match, case-insensitive)', async () => {
+    const response = await request(app).get('/users?class=三年二班')
+
+    expect(response.status).toBe(200)
+    expect(response.body.length).toBeGreaterThanOrEqual(1)
+    expect(response.body.find(u => u.name === 'Bob')).toBeDefined()
+  })
+
+  it('should filter users by class with partial match', async () => {
+    const response = await request(app).get('/users?class=三年')
+
+    expect(response.status).toBe(200)
+    expect(response.body.find(u => u.name === 'Alice')).toBeDefined()
+    expect(response.body.find(u => u.name === 'Bob')).toBeDefined()
+  })
+
+  it('should filter users by class case-insensitively', async () => {
+    const response = await request(app).get('/users?class=三年二班')
+
+    expect(response.status).toBe(200)
+    expect(response.body.find(u => u.name === 'Bob')).toBeDefined()
+  })
+
+  it('should return empty array when class filter has no match', async () => {
+    const response = await request(app).get('/users?class=nonexistent')
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveLength(0)
+  })
 })
 
 describe('POST /users', () => {
@@ -112,6 +172,44 @@ describe('POST /users', () => {
     expect(response.body).toHaveProperty('age')
     expect(response.body).toHaveProperty('gender')
   })
+
+  it('should create user with class field', async () => {
+    const response = await request(app)
+      .post('/users')
+      .send({ name: 'Lily', email: 'lily@example.com', class: '三年三班' })
+
+    expect(response.status).toBe(201)
+    expect(response.body.class).toBe('三年三班')
+  })
+
+  it('should set class to null when not provided', async () => {
+    const response = await request(app)
+      .post('/users')
+      .send({ name: 'Mike', email: 'mike@example.com' })
+
+    expect(response.status).toBe(201)
+    expect(response.body).toHaveProperty('class')
+    expect(response.body.class).toBeNull()
+  })
+
+  it('should create user with class field', async () => {
+    const response = await request(app)
+      .post('/users')
+      .send({ name: 'Lily', email: 'lily@example.com', class: '三年三班' })
+
+    expect(response.status).toBe(201)
+    expect(response.body.class).toBe('三年三班')
+  })
+
+  it('should set class to null when not provided', async () => {
+    const response = await request(app)
+      .post('/users')
+      .send({ name: 'Mike', email: 'mike@example.com' })
+
+    expect(response.status).toBe(201)
+    expect(response.body).toHaveProperty('class')
+    expect(response.body.class).toBeNull()
+  })
 })
 
 describe('PATCH /users/:id', () => {
@@ -195,5 +293,65 @@ describe('PATCH /users/:id', () => {
     expect(response.body.email).toBe('kate.new@example.com')
     expect(response.body.age).toBe(28)
     expect(response.body.gender).toBe('female')
+  })
+
+  it('should update user class field', async () => {
+    const createResponse = await request(app)
+      .post('/users')
+      .send({ name: 'Nina', email: 'nina@example.com', class: '三年一班' })
+    const userId = createResponse.body.id
+
+    const response = await request(app)
+      .patch(`/users/${userId}`)
+      .send({ class: '四年一班' })
+
+    expect(response.status).toBe(200)
+    expect(response.body.class).toBe('四年一班')
+    expect(response.body.name).toBe('Nina')
+  })
+
+  it('should allow partial update without modifying class', async () => {
+    const createResponse = await request(app)
+      .post('/users')
+      .send({ name: 'Oscar', email: 'oscar@example.com', class: '三年二班' })
+    const userId = createResponse.body.id
+
+    const response = await request(app)
+      .patch(`/users/${userId}`)
+      .send({ age: 22 })
+
+    expect(response.status).toBe(200)
+    expect(response.body.class).toBe('三年二班')
+    expect(response.body.age).toBe(22)
+  })
+
+  it('should update user class field', async () => {
+    const createResponse = await request(app)
+      .post('/users')
+      .send({ name: 'Nina', email: 'nina@example.com', class: '三年一班' })
+    const userId = createResponse.body.id
+
+    const response = await request(app)
+      .patch(`/users/${userId}`)
+      .send({ class: '四年一班' })
+
+    expect(response.status).toBe(200)
+    expect(response.body.class).toBe('四年一班')
+    expect(response.body.name).toBe('Nina')
+  })
+
+  it('should allow partial update without modifying class', async () => {
+    const createResponse = await request(app)
+      .post('/users')
+      .send({ name: 'Oscar', email: 'oscar@example.com', class: '三年二班' })
+    const userId = createResponse.body.id
+
+    const response = await request(app)
+      .patch(`/users/${userId}`)
+      .send({ age: 22 })
+
+    expect(response.status).toBe(200)
+    expect(response.body.class).toBe('三年二班')
+    expect(response.body.age).toBe(22)
   })
 })

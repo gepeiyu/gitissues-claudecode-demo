@@ -3,8 +3,8 @@ import { Router } from 'express'
 const router = Router()
 
 const users = [
-  { id: 1, name: 'Alice', email: 'alice@example.com', age: 25, gender: 'female' },
-  { id: 2, name: 'Bob', email: 'bob@example.com', age: 30, gender: 'male' },
+  { id: 1, name: 'Alice', email: 'alice@example.com', age: 25, gender: 'female', class: '三年一班' },
+  { id: 2, name: 'Bob', email: 'bob@example.com', age: 30, gender: 'male', class: '三年二班' },
   { id: 3, name: 'Charlie', email: 'charlie@example.com', age: 35, gender: 'male' }
 ]
 
@@ -16,13 +16,18 @@ router.get('/', (req, res) => {
     result = result.filter(u => u.name.toLowerCase().includes(nameFilter))
   }
 
+  if (req.query.class) {
+    const classFilter = req.query.class.toLowerCase()
+    result = result.filter(u => u.class && u.class.toLowerCase().includes(classFilter))
+  }
+
   res.json(result)
 })
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 router.post('/', (req, res) => {
-  const { name, email, age, gender } = req.body
+  const { name, email, age, gender, class: userClass } = req.body
 
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'name is required' })
@@ -48,7 +53,8 @@ router.post('/', (req, res) => {
     name: name.trim(),
     email: trimmedEmail,
     age: age || null,
-    gender: gender || null
+    gender: gender || null,
+    class: userClass || null
   }
 
   users.push(newUser)
@@ -63,7 +69,7 @@ router.patch('/:id', (req, res) => {
     return res.status(404).json({ error: 'user not found' })
   }
 
-  const { email, age, gender } = req.body
+  const { email, age, gender, class: userClass } = req.body
 
   if (email !== undefined) {
     const trimmedEmail = email.trim()
@@ -86,6 +92,10 @@ router.patch('/:id', (req, res) => {
 
   if (gender !== undefined) {
     user.gender = gender
+  }
+
+  if (userClass !== undefined) {
+    user.class = userClass
   }
 
   res.json(user)
