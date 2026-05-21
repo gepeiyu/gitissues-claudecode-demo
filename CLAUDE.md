@@ -1,343 +1,82 @@
-# Claude Code Governance Rules
+# CLAUDE.md
 
-## Core Principles
+基于 GitHub Issue 的需求管理与开发协作的行为准则。
 
-- All work must start from a GitHub Issue
-- Never code before an approved implementation plan
-- Never develop directly on main
-- Never merge Pull Requests automatically
-- Keep changes minimal and focused
-- Human approval is required for scope changes and dangerous operations
+**适用范围：** 当用户要求创建/维护 Issue，或基于 Issue 开发时生效。其他场景正常工作，不受约束。
 
----
+## 1. 写入前确认
 
-# 1. Issue Rules
+**所有写入 GitHub 的内容必须先确认。**
 
-All development must originate from a GitHub Issue.
+- 创建 Issue、修改 Issue、发布计划、发布汇报、创建 PR → 先展示草稿，确认后执行
+- 状态更新评论（开始实施、进度变化）→ 自动发送，无需确认
+- Issue创建、修改完成后，停下来，询问用户是否立即实现
 
-Every Issue should include:
+## 2. Issue 驱动：先转化为可验证的目标
 
-- Goal
-- Requirements
-- Acceptance Criteria
-- Non-Goals
-- Technical Notes (if needed)
+**不要拿到 Issue 就写代码。先翻译成可验证的目标。**
 
-Example Non-Goals:
+- 目标：[要达成什么]
+- 验证：[怎么确认完成了]
+- 范围外：[明确不做什么]
 
-- Do not refactor auth module
-- Do not introduce database
-- Do not change API response format
+然后拆解为可验证的小步骤。如果验证项列不出具体测试或检查，停下来问用户。
 
-If requirements are unclear:
-- ask questions first
-- do not guess
+## 3. 计划先行
 
----
+**没有批准的计划，不得开始编码。**
 
-# 2. Planning Rules
+计划必须包含：需要创建/修改的文件、测试方案、风险与范围外事项。
 
-Before implementation:
+展示计划草稿 → 用户确认 → 发布到 Issue 评论 → 等待用户确认“开始实施”。实施中如需修改计划外文件，停下来说明原因，请求批准。
 
-1. Read the entire Issue
-2. Analyze the requirement
-3. Create an implementation plan
-4. Post the plan into Issue comments
-5. Wait for human confirmation
-6. Start development only after confirmation
+## 4. 最小改动
 
-Never start coding immediately.
+**只改必须改的。每行改动必须能追溯到 Issue。**
 
-Implementation Plan must include:
+- 不做没被要求的功能
+- 不为单次使用写抽象
+- 不顺手重构或“优化”
 
-- Files to create
-- Files to modify
-- Test plan
-- Risks
-- Out-of-scope items
-- Expected modified files
+写完后问自己：这行改动直接回答 Issue 里的哪个需求？答不出的删掉。200 行能变 50 行就重写。
 
-If additional files become necessary:
-- explain why
-- request approval first
+## 5. TDD 完整性
 
----
+**测试是规格，不是障碍。**
 
-# 2.1 Status Update Rules
+1. 按验收标准写测试
+2. 确认全部 failing（红）
+3. 展示测试用例，等确认
+4. 实现，让测试通过（绿）
 
-**Before starting implementation:**
-1. Add a "Status Update: Starting implementation" comment to the Issue, describing upcoming work
-2. **Only then start coding**
+禁止修改期望值、删除或注释 failing 测试、使用 skip/only、降低验收标准。无法在不违规的情况下通过测试 → 停下来，汇报冲突，等决策。
 
-**After implementation is complete:**
-1. Add a "Status Update: Completed, waiting for confirmation" comment to the Issue, including:
-   - List of files created/modified
-   - Test results
-   - Acceptance criteria checklist
-2. Wait for user to confirm implementation fully meets requirements
-3. **Only create a Pull Request when the user explicitly requests it**
+## 6. 状态透明
 
-**Forbidden:**
-- Starting coding without updating start status in the Issue
-- Automatically creating a PR without user confirmation
+**让人工随时知道进展。**
 
----
+- 开始编码前：自动在 Issue 评论 `🔄 开始实施：[简述]`
+- 完成后：准备验收汇报（文件列表、测试结果、验收清单）
+- 验收汇报：先展示草稿，确认后发布
 
-# 3. Scope Control Rules
+进度更新自动发送，无需确认。
 
-Do not expand scope without approval.
+## 7. Git 与 PR
 
-If additional refactoring or redesign appears necessary:
+- 分支：`feature/issue-<id>-<short-name>`，禁止直接提交 `main`
+- Commit：Conventional Commits，关联 `Refs: #N`
+- 危险命令（`push --force` / `reset --hard` / `clean -fd` / `rebase`）→ 说明原因和风险，等批准
+- PR：仅在用户主动要求时创建，且必须确认草稿
 
-1. Stop
-2. Explain the reason
-3. Describe the impact
-4. Request approval
-5. Continue only after confirmation
+## 8. 失败处理
 
-Prefer the simplest implementation that satisfies the Issue requirements.
+同一问题连续失败 3 次后：停止 → 汇报错误和根本原因 → 列出已尝试的方法 → 等人工决策。不要无限重试。
 
-Do not introduce:
+## 9. 权责边界
 
-- unnecessary abstractions
-- generic frameworks
-- premature extensibility
-- architecture redesigns
+| 人工决策 | Agent 执行 |
+|----------|-------------|
+| 需求范围、架构方案、合并与发布 | 实现、测试、局部重构（已批准范围）|
+| 确认 GitHub 写入内容 | 自动发送状态更新 |
 
----
-
-# 4. Git Rules
-
-Never develop directly on `main`.
-
-Always create a feature branch:
-
-```bash
-git checkout -b feature/issue-<id>-<short-name>
-```
-
-Examples:
-
-```bash
-feature/issue-12-users-api
-feature/issue-18-login-fix
-```
-
-Commits should be:
-
-- Small
-- Focused
-- Logically grouped
-
-Use conventional commits:
-
-```bash
-feat(users): add name filtering
-fix(auth): handle expired token
-```
-
----
-
-# 5. Dangerous Command Rules
-
-Never run dangerous commands without explicit approval.
-
-Forbidden without confirmation:
-
-```bash
-git push --force
-git reset --hard
-git clean -fd
-rm -rf
-git rebase
-```
-
-If such operations are needed:
-- explain why
-- explain risks
-- wait for approval
-
----
-
-# 6. Development Rules
-
-Preferred workflow:
-
-1. Write tests based on acceptance criteria
-2. Run tests — confirm they fail
-3. Report test cases to human and wait for confirmation
-4. Implement feature
-5. Run tests — confirm they pass
-6. Self-review changes
-7. Create PR
-
-During development:
-
-- keep changes minimal
-- avoid unrelated modifications
-- avoid hidden behavior changes
-- avoid silent dependency upgrades
-
-Never modify unrelated files.
-
-Never delete files unless explicitly requested.
-
-**TDD Integrity Rules:**
-
-Never modify test expectations to make tests pass.
-
-Never delete or comment out failing test cases.
-
-Never use `skip` or `only` to bypass failing tests.
-
-Never lower acceptance criteria to match a broken implementation.
-
-Tests must cover:
-
-- normal path
-- boundary inputs (empty, maximum, special characters)
-- invalid inputs (missing fields, wrong types)
-
-If a test cannot be made to pass without violating the above rules:
-- stop
-- report the conflict
-- wait for human decision
-
----
-
-# 7. Failure Handling Rules
-
-If tests or implementation fail repeatedly:
-
-After 3 failed attempts:
-
-1. Stop implementation
-2. Summarize current status
-3. Explain root cause
-4. List attempted fixes
-5. Wait for human decision
-
-Do not loop endlessly.
-
----
-
-# 8. Pull Request Rules
-
-All changes must go through Pull Request review.
-
-Never merge automatically.
-
-**Always use the PR template:**
-- Fill in all sections of the template
-- Do NOT override the template with custom body content
-- Include all required information: summary, issue link, plan link, testing results, risks
-
-After PR creation:
-- stop
-- wait for human review
-
-Prefer small Pull Requests.
-
-If implementation becomes too large:
-- split into phases
-- or propose multiple PRs
-
-PR description should include:
-
-- summary
-- related issue
-- approved plan link
-- testing results
-- risks
-- known limitations
-
----
-
-# 9. Review Rules
-
-Review must verify:
-
-- implementation matches approved plan
-- acceptance criteria satisfied
-- no extra scope added
-- no unrelated files modified
-- tests are sufficient
-- risks are acceptable
-
-If implementation diverges from plan:
-- explain why
-- request approval
-
----
-
-# 10. Decision Record Rules
-
-Important technical decisions should be recorded in Issue comments.
-
-Use this structure:
-
-```text
-Decision:
-Reason:
-Trade-offs:
-```
-
-Examples:
-
-- choosing in-memory storage
-- avoiding ORM
-- postponing caching
-- simplifying architecture
-
----
-
-# 11. Completion Rules
-
-A task is complete only when:
-
-- tests pass
-- acceptance criteria verified
-- implementation matches approved plan
-- PR created
-- review is ready
-
-Implementation alone does not mean completion.
-
----
-
-# 12. Human Authority Rules
-
-Human owns:
-
-- scope decisions
-- architecture decisions
-- merge decisions
-- production decisions
-- priority decisions
-
-Claude owns:
-
-- implementation
-- tests
-- local refactoring within approved scope
-- code suggestions
-
-If authority is unclear:
-- ask first
-
----
-
-# 13. Communication Rules
-
-Be concise and direct.
-
-Avoid unnecessary explanations.
-
-Report:
-- risks
-- blockers
-- assumptions
-- trade-offs
-
-If uncertain:
-- ask questions before implementation
+权责不明时先问。主动汇报风险、阻塞、权衡。
