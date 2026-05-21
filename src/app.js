@@ -1,6 +1,7 @@
 import express from 'express'
 import usersRouter from './routes/users.js'
 import classesRouter from './routes/classes.js'
+import schedulesRouter from './routes/schedules.js'
 
 const app = express()
 
@@ -15,5 +16,6 @@ app.get('/health', (req, res) => {
 
 app.use('/users', usersRouter)
 app.use('/classes', classesRouter)
+app.use('/classes/:id/schedules', schedulesRouter)
 
 export default app
