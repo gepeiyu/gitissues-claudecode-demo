@@ -37,6 +37,18 @@
             color: #666;
         }
 
+        .nav-links .user-section {
+            float: right;
+        }
+
+        .nav-links .user-section span {
+            margin-right: 10px;
+        }
+
+        .nav-links .user-section a {
+            color: #dc3545;
+        }
+
         h1 {
             margin-bottom: 30px;
             color: #333;
@@ -169,6 +181,10 @@
     <div class="nav-links">
         <span>用户管理</span>
         <a href="/classes.html">班级管理</a>
+        <div class="user-section" id="user-section">
+            <span id="current-user"></span>
+            <a href="#" id="logout-link">退出</a>
+        </div>
     </div>
 
     <h1>用户管理</h1>
@@ -403,9 +419,30 @@
             }
         }
 
+        // 检查登录状态
+        function checkLogin() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            document.getElementById('current-user').textContent = `当前用户: ${currentUser}`;
+            return true;
+        }
+
+        // 退出登录
+        function handleLogout(e) {
+            e.preventDefault();
+            localStorage.removeItem('currentUser');
+            window.location.href = '/login.html';
+        }
+
         // 初始化
-        document.getElementById('add-user-form').addEventListener('submit', handleAddSubmit);
-        fetchUsers();
+        if (checkLogin()) {
+            document.getElementById('add-user-form').addEventListener('submit', handleAddSubmit);
+            document.getElementById('logout-link').addEventListener('click', handleLogout);
+            fetchUsers();
+        }
     </script>
 </body>
 </html>
