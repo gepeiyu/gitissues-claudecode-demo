@@ -1,5 +1,6 @@
 import express from 'express'
 import usersRouter from './routes/users.js'
+import classesRouter from './routes/classes.js'
 
 const app = express()
 
@@ -13,5 +14,6 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/users', usersRouter)
+app.use('/classes', classesRouter)
 
 export default app
